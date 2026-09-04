@@ -1,0 +1,60 @@
+# ==============================================================================
+# Hydrogeological Potential Mapping — Configuration Template (Adapt to any country)
+# ==============================================================================
+
+study_area:
+  country_name: "YourCountry"
+  country_code: "XXX"           # ISO 3-letter code (e.g., SEN, KEN, MAR, ETH)
+  target_crs: "EPSG:326XX"      # UTM Zone in meters (find your zone at https://epsg.io)
+  resolution: 1000              # Grid resolution in meters (1000m = 1km, 500m = regional)
+  boundary_buffer_m: 25000      # DEM buffer to prevent boundary slope/TPI artifacts
+
+paths:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  output_maps_dir: "outputs/maps"
+  gadm_path: "data/raw/gadm/gadm41_XXX.gpkg"
+  gadm_country_layer: "ADM_ADM_0"
+  gadm_region_layer: "ADM_ADM_1"
+  bgs_path: "data/raw/bgs/YourCountry_HG.shp"
+  chirps_dir: "data/raw/chirps"
+  dem_path: "data/raw/srtm/your_dem.tif"
+  borehole_validation_path: "data/raw/wpdx/boreholes.csv"
+
+bgs_hydrogeology:
+  code_column: "HG_CODE_COLUMN" # Replace with your BGS hydrogeology column
+  scores:
+    "CODE_HIGH": 4
+    "CODE_MED_HIGH": 3
+    "CODE_MED": 2
+    "CODE_LOW": 1
+    "n/a": 0
+
+ahp:
+  criteria:
+    - "geology"
+    - "rainfall"
+    - "slope"
+    - "tpi"
+  pairwise_matrix:
+    - [1.0, 2.0, 3.0, 3.0]
+    - [0.5, 1.0, 2.0, 2.0]
+    - [0.3333333333333333, 0.5, 1.0, 1.0]
+    - [0.3333333333333333, 0.5, 1.0, 1.0]
+
+classification:
+  method: "jenks"              # 'jenks', 'quantiles', or 'equal_interval'
+  n_classes: 4
+  classes:
+    1:
+      label: "Low"
+      color: "#d73027"
+    2:
+      label: "Moderate"
+      color: "#fc8d59"
+    3:
+      label: "Good"
+      color: "#91cf60"
+    4:
+      label: "Excellent"
+      color: "#1a9850"

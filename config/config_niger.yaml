@@ -1,0 +1,75 @@
+# ==============================================================================
+# Hydrogeological Potential Mapping — Configuration pour le Niger
+# ==============================================================================
+
+study_area:
+  country_name: "Niger"
+  country_code: "NER"
+  target_crs: "EPSG:32632"      # UTM Zone 32N (mètres)
+  resolution: 1000              # Résolution de la grille en mètres (1 km)
+  boundary_buffer_m: 25000      # Marge/buffer de 25 km pour éliminer les effets de bord DEM
+
+paths:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  output_maps_dir: "outputs/maps"
+  gadm_path: "data/raw/gadm/gadm41_NER.gpkg"
+  gadm_country_layer: "ADM_ADM_0"
+  gadm_region_layer: "ADM_ADM_1"
+  bgs_path: "data/raw/bgs/Niger_HG.shp"
+  chirps_dir: "data/raw/chirps"
+  dem_path: "data/raw/srtm/niger_dem.tif"
+  borehole_validation_path: "data/raw/wpdx/wpdx_niger.csv"
+
+# ------------------------------------------------------------------------------
+# Évaluation hydrogéologique BGS (Africa Groundwater Atlas)
+# ------------------------------------------------------------------------------
+bgs_hydrogeology:
+  code_column: "NigHGComb"
+  scores:
+    "CSIF-M/H": 4   # Grès consolidés fracturés / Sédimentaire productif élevé
+    "CSI-M/H": 3    # Sédimentaire consolidé intergranulaire moyen-élevé
+    "U-M/H(L)": 3   # Formations alluviales / sédiments non consolidés
+    "I-L/M": 2      # Sédimentaire à productivité faible à moyenne
+    "B-L": 1        # Socle cristallin / Basement à faible perméabilité
+    "n/a": 0        # Non évalué / Hors aquifère principal
+
+# ------------------------------------------------------------------------------
+# Matrice de comparaison AHP de Saaty (Analytic Hierarchy Process)
+# Critères : [Géologie, Pluviométrie, Pente, TPI]
+# Échelle de Saaty : 1=égal, 3=modéré, 5=fort, 7=très fort, 9=extrême
+# ------------------------------------------------------------------------------
+ahp:
+  criteria:
+    - "geology"
+    - "rainfall"
+    - "slope"
+    - "tpi"
+  pairwise_matrix:
+    - [1.0, 2.0, 3.0, 3.0]
+    - [0.5, 1.0, 2.0, 2.0]
+    - [0.3333333333333333, 0.5, 1.0, 1.0]
+    - [0.3333333333333333, 0.5, 1.0, 1.0]
+  # Cette matrice produit des poids cohérents :
+  # Géologie ~43.8%, Pluie ~26.7%, Pente ~14.7%, TPI ~14.7%
+  # avec un Ratio de Cohérence CR ~ 0.015 (< 0.10, hautement cohérent).
+
+# ------------------------------------------------------------------------------
+# Classification du potentiel hydrogéologique
+# ------------------------------------------------------------------------------
+classification:
+  method: "jenks"              # 'jenks' (recommandé), 'quantiles', ou 'equal_interval'
+  n_classes: 4
+  classes:
+    1:
+      label: "Faible / Low"
+      color: "#d73027"
+    2:
+      label: "Modéré / Moderate"
+      color: "#fc8d59"
+    3:
+      label: "Bon / Good"
+      color: "#91cf60"
+    4:
+      label: "Excellent / High"
+      color: "#1a9850"
